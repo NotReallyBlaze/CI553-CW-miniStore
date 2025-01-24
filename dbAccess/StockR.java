@@ -11,8 +11,11 @@ import catalogue.Product;
 import debug.DEBUG;
 import middle.StockException;
 import middle.StockReader;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
-import javax.swing.*;
+import java.io.ByteArrayInputStream;
+import java.rmi.RemoteException;
 import java.sql.*;
 
 // There can only be 1 ResultSet opened per statement
@@ -147,29 +150,32 @@ public class StockR implements StockReader
    *  Assumed to exist in database.
    * @return ImageIcon representing the image
    */
-  public synchronized ImageIcon getImage( String pNum )
-         throws StockException
-  {
-    String filename = "default.jpg";  
-    try
-    {
-      ResultSet rs   = getStatementObject().executeQuery(
-        "select picture from ProductTable " +
-        "  where  ProductTable.productNo = '" + pNum + "'"
-      );
-      
-      boolean res = rs.next();
-      if ( res )
-        filename = rs.getString( "picture" );
-      rs.close();
-    } catch ( SQLException e )
-    {
-      DEBUG.error( "getImage()\n%s\n", e.getMessage() );
-      throw new StockException( "SQL getImage: " + e.getMessage() );
+  
+  public synchronized byte[] getImageData(String pNum) throws StockException, RemoteException {
+    byte[] imageBytes = null;
+    try {
+        // Update the query to retrieve the image as a BLOB (binary data)
+        ResultSet rs = getStatementObject().executeQuery(
+            "SELECT picture FROM ProductTable WHERE ProductTable.productNo = '" + pNum + "'"
+        );
+
+        // If the result is found, retrieve the BLOB as a byte array
+        if (rs.next()) {
+            imageBytes = rs.getBytes("picture");
+        }
+        rs.close();
+    } catch (SQLException e) {
+        DEBUG.error("getImageData()\n%s\n", e.getMessage());
+        throw new StockException("SQL getImageData: " + e.getMessage());
     }
-    
-    //DEBUG.trace( "DB StockR: getImage -> %s", filename );
-    return new ImageIcon( filename );
-  }
+
+    // If imageBytes is found, return it
+    if (imageBytes != null) {
+        return imageBytes;
+    } else {
+        // Return a default image or handle as needed
+        return new byte[0]; // Empty byte array or you could return a default image as bytes
+    }
+}
 
 }

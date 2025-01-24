@@ -4,46 +4,48 @@ import catalogue.*;
 import middle.MiddleFactory;
 import middle.Names;
 import middle.RemoteMiddleFactory;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 
-import javax.swing.*;
 
 /**
  * The standalone Cashier Client.
  */
 
 
-public class CashierClient
+public class CashierClient extends Application
 {
    public static void main (String args[])
    {
-     String stockURL = args.length < 1     // URL of stock RW
-                     ? Names.STOCK_RW      //  default  location
-                     : args[0];            //  supplied location
-     String orderURL = args.length < 2     // URL of order
-                     ? Names.ORDER         //  default  location
-                     : args[1];            //  supplied location
-     
-    RemoteMiddleFactory mrf = new RemoteMiddleFactory();
-    mrf.setStockRWInfo( stockURL );
-    mrf.setOrderInfo  ( orderURL );        //
-    displayGUI(mrf);                       // Create GUI
+     launch(args); //Starts JavaFX
+   }
+
+  @Override
+  public void start (Stage primaryStage) { //Where the orignal nain was
+    String stockURL = getParameters().getRaw().size() < 1     // URL of stock RW
+                    ? Names.STOCK_RW      //  default  location
+                    : getParameters().getRaw().get(0);            //  supplied location
+    String orderURL = getParameters().getRaw().size() < 2     // URL of order
+                    ? Names.ORDER         //  default  location
+                    : getParameters().getRaw().get(1);            //  supplied location
+                    
+  RemoteMiddleFactory mrf = new RemoteMiddleFactory();
+  mrf.setStockRWInfo( stockURL );
+  mrf.setOrderInfo  ( orderURL );        //
+  displayGUI(primaryStage, mrf);         // Create GUI
   }
 
-
-  private static void displayGUI(MiddleFactory mf)
-  {     
-    JFrame  window = new JFrame();
-     
-    window.setTitle( "Cashier Client (MVC RMI)");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    
+  private static void displayGUI(Stage window, MiddleFactory mf)
+  {         
     CashierModel      model = new CashierModel(mf);
-    CashierView       view  = new CashierView( window, mf, 0, 0 );
+    CashierView       view  = new CashierView( window, mf);
     CashierController cont  = new CashierController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Display Screen
+    window.show();         // Dispclay Screen
     model.askForUpdate();
   }
 }

@@ -2,10 +2,16 @@ package remote;
 
 import catalogue.Product;
 import dbAccess.StockRW;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import middle.StockException;
 
-import javax.swing.*;
+import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
+
+import javax.imageio.ImageIO;
 
 // There can only be 1 ResultSet opened per statement
 // so no simultaneous use of the statement object
@@ -68,11 +74,15 @@ public class      R_StockRW
    * @return image
    * @throws middle.StockException if underlying error
    */
-  public synchronized ImageIcon getImage( String pNum )
-         throws StockException
-  {
-    return aStockRW.getImage( pNum );
-  }
+  
+  public synchronized byte[] getImageData(String pNum)
+        throws StockException {
+    try {
+        return aStockRW.getImageData(pNum);
+    } catch (Exception e) {
+        throw new StockException("Error retrieving image: " + e.getMessage());
+    }
+}
 
 
   /**

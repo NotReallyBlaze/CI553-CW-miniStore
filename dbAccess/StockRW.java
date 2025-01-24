@@ -9,9 +9,18 @@ package dbAccess;
 
 import catalogue.Product;
 import debug.DEBUG;
+import javafx.scene.image.Image;
 import middle.StockException;
 import middle.StockReadWriter;
+import remote.RemoteStockRW_I;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 // There can only be 1 ResultSet opened per statement
@@ -22,7 +31,7 @@ import java.sql.SQLException;
 /**
   * Implements read/write access to the stock database.
   */
-public class StockRW extends StockR implements StockReadWriter 
+public class StockRW extends StockR implements StockReadWriter, RemoteStockRW_I 
 {
   /*
    * Connects to database
@@ -130,4 +139,31 @@ public class StockRW extends StockR implements StockReadWriter
       throw new StockException( "SQL modifyStock: " + e.getMessage() );
     }
   }
+
+  // This method handles fetching an image as byte data
+  private byte[] getImageBytes(String imagePath) throws StockException {
+    try {
+        File file = new File(imagePath);
+        FileInputStream fis = new FileInputStream(file);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = fis.read(buffer)) != -1) {
+            baos.write(buffer, 0, length);
+        }
+        fis.close();
+        return baos.toByteArray();
+    } catch (IOException e) {
+        throw new StockException("Failed to load image: " + e.getMessage());
+    }
+}
+
+@Override
+public synchronized byte[] getImageData(String number) throws RemoteException, StockException {
+    DEBUG.trace("DB StockRW: getImageData(%s)", number);
+    String imagePath = "images/Pic" + number + ".jpg";  // Path to the image file
+    return getImageBytes(imagePath); // Fetch the image as byte[]
+}
+
+
 }

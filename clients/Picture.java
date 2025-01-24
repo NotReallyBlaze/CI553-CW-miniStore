@@ -1,70 +1,58 @@
 package clients;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import javax.swing.ImageIcon;
+
+import javafx.geometry.Rectangle2D;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 /**
  * A class to display a picture in a client
  * @author  Mike Smith University of Brighton
  * @version 1.0
  */
-public class Picture extends Canvas
+public class Picture extends StackPane
 {
   private static final long serialVersionUID = 1;
   private int   width      = 260;
   private int   height     = 260;
-  private Image thePicture = null;
+  private ImageView imageView;
 
   public Picture()
   {
-    setSize( width, height );
+    setPrefSize( width, height );
+    imageView = new ImageView();
+    getChildren().add(imageView);
+    setupBackground();
   }
   
   public Picture(int aWidth, int aHeight)
   {
     width = aWidth;
     height= aHeight;
-    setSize( width, height );
+    setPrefSize( width, height );
+    imageView = new ImageView();
+    getChildren().add(imageView);
+    setupBackground();
   }
 
-  public void set( ImageIcon ic )
+  public void set( String imagePath )
   {
-    thePicture = ic.getImage();         // Image to be drawn
-    repaint();
+    Image image = new Image( imagePath );
+    imageView.setImage( image );
   }
     
   public void clear()
   {
-    thePicture = null;                  // clear picture
-    repaint();                          // Force repaint
+    imageView.setImage(null);                  // clear picture
   }
 
-  public void paint( Graphics g )       // When 'Window' is first
-  {                                     //  shown or damaged
-    drawImage( (Graphics2D) g );
-  }
-  
-  public void update( Graphics g )      // Called by repaint
-  {                                     //
-    drawImage( (Graphics2D) g );        // Draw picture
-  }
-
-  /**
-   * Draw the picture
-   * First set the area to white and then 
-   *  draw the image 
-   * @param g Grapics context
-   */
-
-  public void drawImage( Graphics2D g )
+  private void setupBackground()
   {
-    setSize( width, height );
-    g.setPaint( Color.white );
-    g.fill( new Rectangle2D.Double( 0, 0, width, height ) );
-    if ( thePicture != null )
-    {
-      g.drawImage(thePicture, 0, 0, null);
-    }
+    Rectangle background = new Rectangle( width, height, Color.WHITE );
+    getChildren().add(0, background);;
   }
 }

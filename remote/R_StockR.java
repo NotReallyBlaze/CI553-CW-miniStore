@@ -3,8 +3,10 @@ package remote;
 import catalogue.Product;
 import dbAccess.StockR;
 import middle.StockException;
+import javafx.scene.image.Image;
 
-import javax.swing.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 
 // There can only be 1 ResultSet opened per statement
@@ -59,10 +61,17 @@ public class      R_StockR
    * @param pNum The product number
    * @return Image
    */
-  public synchronized ImageIcon getImage( String pNum )
+  public synchronized byte[] getImageData( String pNum )
          throws RemoteException, StockException
   {
-    return aStockR.getImage( pNum );
+    try
+    {
+      return aStockR.getImageData(pNum);
+    }
+    catch ( Exception e )
+    {
+      throw new StockException("Error loading image: " + e.getMessage());
+    }
   }
 
 }

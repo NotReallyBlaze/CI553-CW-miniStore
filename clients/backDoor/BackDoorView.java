@@ -1,10 +1,23 @@
 package clients.backDoor;
 
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 import middle.MiddleFactory;
 import middle.StockReadWriter;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -12,7 +25,7 @@ import java.util.Observer;
  * Implements the Customer view.
  */
 
-public class BackDoorView implements Observer
+public class BackDoorView extends Region implements Observer
 {
   private static final String RESTOCK  = "Add";
   private static final String CLEAR    = "Clear";
@@ -21,15 +34,15 @@ public class BackDoorView implements Observer
   private static final int H = 300;       // Height of window pixels
   private static final int W = 400;       // Width  of window pixels
 
-  private final JLabel      pageTitle  = new JLabel();
-  private final JLabel      theAction  = new JLabel();
-  private final JTextField  theInput   = new JTextField();
-  private final JTextField  theInputNo = new JTextField();
-  private final JTextArea   theOutput  = new JTextArea();
-  private final JScrollPane theSP      = new JScrollPane();
-  private final JButton     theBtClear = new JButton( CLEAR );
-  private final JButton     theBtRStock = new JButton( RESTOCK );
-  private final JButton     theBtQuery = new JButton( QUERY );
+  private final Label pageTitle = new Label("Staff check and manage stock");
+  private final Label theAction = new Label(" ");
+  private final TextField theInput = new TextField();
+  private final TextField theInputNo = new TextField();
+  private final TextArea theOutput = new TextArea();  
+  private final ScrollPane theSP = new ScrollPane(theOutput);
+  private final Button theBtClear = new Button(CLEAR);
+  private final Button theBtRStock = new Button(RESTOCK);
+  private final Button theBtQuery = new Button(QUERY);
   
   private StockReadWriter theStock     = null;
   private BackDoorController cont= null;
@@ -41,7 +54,7 @@ public class BackDoorView implements Observer
    * @param x     x-cordinate of position of window on screen 
    * @param y     y-cordinate of position of window on screen  
    */
-  public BackDoorView(  RootPaneContainer rpc, MiddleFactory mf, int x, int y )
+  public BackDoorView(  Stage stage, MiddleFactory mf)
   {
     try                                             // 
     {      
@@ -50,53 +63,53 @@ public class BackDoorView implements Observer
     {
       System.out.println("Exception: " + e.getMessage() );
     }
-    Container cp         = rpc.getContentPane();    // Content Pane
-    Container rootWindow = (Container) rpc;         // Root Window
-    cp.setLayout(null);                             // No layout manager
-    rootWindow.setSize( W, H );                     // Size of Window
-    rootWindow.setLocation( x, y );
-    
-    Font f = new Font("Monospaced",Font.PLAIN,12);  // Font f is
 
-    pageTitle.setBounds( 110, 0 , 270, 20 );       
-    pageTitle.setText( "Staff check and manage stock" );                        
-    cp.add( pageTitle );
-    
-    theBtQuery.setBounds( 16, 25+60*0, 80, 40 );    // Buy button 
-    theBtQuery.addActionListener(                   // Call back code
-      e -> cont.doQuery( theInput.getText() ) );
-    cp.add( theBtQuery );                           //  Add to canvas
+    // Set up the VBox layout
+    //VBox root = new VBox(10);
+    //root.setPrefSize(W, H);
+    GridPane grid = new GridPane();                 // Layout configuration
+    grid.setPadding(new Insets(5, 10, 5, 10));              // Padding around grid
+    grid.setHgap(10);                               // Horizontal gap
+    grid.setVgap(10);                               // Vertical gap
 
-    theBtRStock.setBounds( 16, 25+60*1, 80, 40 );   // Check Button
-    theBtRStock.addActionListener(                  // Call back code
-      e -> cont.doRStock( theInput.getText(),
-                          theInputNo.getText() ) );
-    cp.add( theBtRStock );                          //  Add to canvas
+    grid.add(pageTitle, 1, 0);                      // Title label
+    GridPane.setHalignment(pageTitle, HPos.CENTER); // Center the title
 
-    theBtClear.setBounds( 16, 25+60*2, 80, 40 );    // Buy button 
-    theBtClear.addActionListener(                   // Call back code
-      e -> cont.doClear() );
-    cp.add( theBtClear );                           //  Add to canvas
+    grid.add(theSP, 1, 2, 1, 2);                // Action Label
+    theSP.setFitToWidth(true);
+    GridPane.setVgrow(theSP, Priority.ALWAYS);
 
- 
-    theAction.setBounds( 110, 25 , 270, 20 );       // Message area
-    theAction.setText( "" );                        // Blank
-    cp.add( theAction );                            //  Add to canvas
+    HBox hbox = new HBox(10);                       // Horizontal box
+    hbox.getChildren().addAll(theInput, theInputNo);// Add input fields to hbox
+    HBox.setHgrow(theInput, Priority.ALWAYS);
+    HBox.setHgrow(theInputNo, Priority.ALWAYS);
+    grid.add(hbox, 1, 1);                           // Add hbox to grid
 
-    theInput.setBounds( 110, 50, 120, 40 );         // Input Area
-    theInput.setText("");                           // Blank
-    cp.add( theInput );                             //  Add to canvas
-    
-    theInputNo.setBounds( 260, 50, 120, 40 );       // Input Area
-    theInputNo.setText("0");                        // 0
-    cp.add( theInputNo );                           //  Add to canvas
+    // Buttons
+    grid.add(theBtQuery, 0, 1);                     // Query button
+    grid.add(theBtRStock, 0, 2);                    // Restock button
+    grid.add(theBtClear, 0, 3);                     // Clear button
+    theBtQuery.setPrefWidth(300);                   // Setting width to avoid truncation
+    theBtClear.setPrefWidth(300);
+    theBtRStock.setPrefWidth(300);
+    theBtQuery.setStyle("-fx-padding: 10; -fx-font-size: 14px;"); // Button styling
+    theBtRStock.setStyle("-fx-padding: 10; -fx-font-size: 14px;");
+    theBtClear.setStyle("-fx-padding: 10; -fx-font-size: 14px;");
 
-    theSP.setBounds( 110, 100, 270, 160 );          // Scrolling pane
-    theOutput.setText( "" );                        //  Blank
-    theOutput.setFont( f );                         //  Uses font  
-    cp.add( theSP );                                //  Add to canvas
-    theSP.getViewport().add( theOutput );           //  In TextArea
-    rootWindow.setVisible( true );                  // Make visible
+    // Output Text Area (with scroll)
+    theOutput.setEditable(false);
+    theSP.setFitToWidth(true);
+
+    // Button Actions
+    theBtQuery.setOnAction(e -> cont.doQuery(theInput.getText()));
+    theBtRStock.setOnAction(e -> cont.doRStock(theInput.getText(), theInputNo.getText()));
+    theBtClear.setOnAction(e -> cont.doClear());
+
+    // Set the scene and stage
+    Scene scene = new Scene(grid, 400, 300);        // Create a scene
+    stage.setScene(scene);
+    stage.setTitle("Back Door Management MVC");
+    stage.show();
     theInput.requestFocus();                        // Focus is here
   }
   

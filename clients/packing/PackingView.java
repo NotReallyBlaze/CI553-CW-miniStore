@@ -1,11 +1,17 @@
 package clients.packing;
 
 import catalogue.Basket;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import middle.MiddleFactory;
 import middle.OrderProcessing;
-
-import javax.swing.*;
-import java.awt.*;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -14,18 +20,18 @@ import java.util.Observer;
 
  */
 
-public class PackingView implements Observer
+public class PackingView extends Region implements Observer
 {
   private static final String PACKED = "Packed";
 
   private static final int H = 300;       // Height of window pixels
   private static final int W = 400;       // Width  of window pixels
 
-  private final JLabel      pageTitle  = new JLabel();
-  private final JLabel      theAction  = new JLabel();
-  private final JTextArea   theOutput  = new JTextArea();
-  private final JScrollPane theSP      = new JScrollPane();
-  private final JButton     theBtPack= new JButton( PACKED );
+  private final Label      pageTitle  = new Label();
+  private final Label      theAction  = new Label();
+  private final TextArea   theOutput  = new TextArea();
+  private final ScrollPane theSP      = new ScrollPane();
+  private final Button     theBtPack= new Button( PACKED );
  
   private OrderProcessing theOrder     = null;
   
@@ -38,7 +44,7 @@ public class PackingView implements Observer
    * @param x     x-cordinate of position of window on screen 
    * @param y     y-cordinate of position of window on screen  
    */
-  public PackingView(  RootPaneContainer rpc, MiddleFactory mf, int x, int y )
+  public PackingView(  Stage rpc, MiddleFactory mf)
   {
     try                                           // 
     {      
@@ -47,33 +53,32 @@ public class PackingView implements Observer
     {
       System.out.println("Exception: " + e.getMessage() );
     }
-    Container cp         = rpc.getContentPane();    // Content Pane
-    Container rootWindow = (Container) rpc;         // Root Window
-    cp.setLayout(null);                             // No layout manager
-    rootWindow.setSize( W, H );                     // Size of Window
-    rootWindow.setLocation( x, y );
     
-    Font f = new Font("Monospaced",Font.PLAIN,12);  // Font f is
+    VBox root = new VBox(10); // VBox for layout
+    root.setPrefSize(W, H);   // Set preferred size for VBox
     
-    pageTitle.setBounds( 110, 0 , 270, 20 );       
-    pageTitle.setText( "Packing Bought Order" );                        
-    cp.add( pageTitle );
+    pageTitle.setText("Packing Bought Order");// Title
+    root.getChildren().add(pageTitle);
 
-    theBtPack.setBounds( 16, 25+60*0, 80, 40 );   // Check Button
-    theBtPack.addActionListener(                   // Call back code
-      e -> cont.doPacked() );
-    cp.add( theBtPack );                          //  Add to canvas
+    // Action label
+    theAction.setText("");
+    root.getChildren().add(theAction);
 
-    theAction.setBounds( 110, 25 , 270, 20 );       // Message area
-    theAction.setText( "" );                        // Blank
-    cp.add( theAction );                            //  Add to canvas
+    // Scrolling output pane
+    theOutput.setEditable(false); // Make the TextArea non-editable
+    theSP.setContent(theOutput);  // Add TextArea to ScrollPane
+    root.getChildren().add(theSP);
 
-    theSP.setBounds( 110, 55, 270, 205 );           // Scrolling pane
-    theOutput.setText( "" );                        //  Blank
-    theOutput.setFont( f );                         //  Uses font  
-    cp.add( theSP );                                //  Add to canvas
-    theSP.getViewport().add( theOutput );           //  In TextArea
-    rootWindow.setVisible( true );                  // Make visible
+    // Packed Button
+    theBtPack.setOnAction(e -> cont.doPacked());  // Event handler for the button
+    root.getChildren().add(theBtPack);
+
+    Scene scene = new Scene(root, W, H);  // Set scene with VBox root
+    rpc.setScene(scene);                   // Set the scene to the stage
+    rpc.setTitle("Packing Client (RMI MVC)");
+    //rpc.setX(x);  // Set window X position
+    //rpc.setY(y);  // Set window Y position
+    rpc.show();   // Show the window
   }
   
   public void setController( PackingController c )

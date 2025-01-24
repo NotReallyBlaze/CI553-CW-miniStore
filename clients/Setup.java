@@ -3,6 +3,8 @@ package clients;
 import dbAccess.DBAccess;
 import dbAccess.DBAccessFactory;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -16,35 +18,12 @@ class Setup
 {
   private static String[] sqlStatements = {
 
-//  " SQL code to set up database tables",
-
-//  "drop table ProductList",
-//  "drop table StockList",
-
-
   "drop table ProductTable",
   "create table ProductTable ("+
       "productNo      Char(4)," +
       "description    Varchar(40)," +
-      "picture        Varchar(80)," +
+      "picture        Blob," +
       "price          Float)",
-
-  "insert into ProductTable values " +
-     "('0001', '40 inch LED HD TV', 'images/pic0001.jpg', 269.00)",
-  "insert into ProductTable values " +
-     "('0002', 'DAB Radio',         'images/pic0002.jpg', 29.99)",
-  "insert into ProductTable values " +
-     "('0003', 'Toaster',           'images/pic0003.jpg', 19.99)",
-  "insert into ProductTable values " +
-     "('0004', 'Watch',             'images/pic0004.jpg', 29.99)",
-  "insert into ProductTable values " +
-     "('0005', 'Digital Camera',    'images/pic0005.jpg', 89.99)",
-  "insert into ProductTable values " +
-     "('0006', 'MP3 player',        'images/pic0006.jpg', 7.99)",
-  "insert into ProductTable values " +
-     "('0007', '32Gb USB2 drive',   'images/pic0007.jpg', 6.99)",
-//  "select * from ProductTable",
-
 
   "drop table StockTable",
   "create table StockTable ("+
@@ -154,8 +133,34 @@ class Setup
                          ": "+e.getMessage());
     }
 
+    String DB_URL = "jdbc:derby:catshop.db;create=true";
+    String insertSQL = "INSERT INTO ProductTable (productNo, description, picture, price) VALUES (?, ?, ?, ?)";
+
+    try (Connection conn = DriverManager.getConnection(DB_URL);
+         PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+
+        // Insert data
+        insertProduct(pstmt, "0001", "40 inch LED HD TV", "images/pic0001.jpg", 269.00f);
+        insertProduct(pstmt, "0002", "DAB Radio", "images/pic0002.jpg", 29.99f);
+        insertProduct(pstmt, "0003", "Toaster", "images/pic0003.jpg", 19.99f);
+        insertProduct(pstmt, "0004", "Watch", "images/pic0004.jpg", 29.99f);
+        insertProduct(pstmt, "0005", "Digital Camera", "images/pic0005.jpg", 89.99f);
+        insertProduct(pstmt, "0006", "MP3 player", "images/pic0006.jpg", 7.99f);
+        insertProduct(pstmt, "0007", "32Gb USB2 drive", "images/pic0007.jpg", 6.99f);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
   }
 
+  private static void insertProduct(PreparedStatement pstmt, String productNo, String description, String imagePath, float price) throws Exception {
+    pstmt.setString(1, productNo);
+    pstmt.setString(2, description);
+    pstmt.setBytes(3, Files.readAllBytes(Paths.get(imagePath)));
+    pstmt.setFloat(4, price);
+    pstmt.executeUpdate();
+  }
 
   private static void query( Statement stmt, String url, String stm )
   {

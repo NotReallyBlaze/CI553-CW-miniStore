@@ -8,7 +8,9 @@ import middle.OrderProcessing;
 import middle.StockException;
 import middle.StockReader;
 
-import javax.swing.*;
+import javafx.scene.image.Image;
+
+import java.io.ByteArrayInputStream;
 import java.util.Observable;
 
 /**
@@ -23,7 +25,7 @@ public class CustomerModel extends Observable
 
   private StockReader     theStock     = null;
   private OrderProcessing theOrder     = null;
-  private ImageIcon       thePic       = null;
+  private Image       thePic       = null;
 
   /*
    * Construct the model of the Customer
@@ -75,7 +77,21 @@ public class CustomerModel extends Observable
               pr.getQuantity() );               //    quantity
           pr.setQuantity( amount );             //   Require 1
           theBasket.add( pr );                  //   Add to basket
-          thePic = theStock.getImage( pn );     //    product
+
+          try {
+            byte[] imageData = theStock.getImageData(pn); // Fetch image data
+            if (imageData != null && imageData.length > 0) {
+              ByteArrayInputStream imageStream = new ByteArrayInputStream(imageData);
+              thePic = new Image(imageStream); // Convert byte array to Image
+            } else {
+              thePic = null; // Handle cases where no image is available
+            }
+          } catch (Exception e) {
+            DEBUG.error("CustomerClient.doCheck()\nFailed to load image for product %s: %s", pn, e.getMessage());
+            thePic = null; // Set to null if there's an error
+          }
+
+
         } else {                                //  F
           theAction =                           //   Inform
             pr.getDescription() +               //    product not
@@ -109,7 +125,7 @@ public class CustomerModel extends Observable
    * Return a picture of the product
    * @return An instance of an ImageIcon
    */ 
-  public ImageIcon getPicture()
+  public Image getPicture()
   {
     return thePic;
   }

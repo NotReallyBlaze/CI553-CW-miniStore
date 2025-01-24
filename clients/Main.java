@@ -14,8 +14,15 @@ import clients.packing.PackingModel;
 import clients.packing.PackingView;
 import middle.LocalMiddleFactory;
 import middle.MiddleFactory;
-import javax.swing.*;
-import java.awt.*;
+import javafx.application.Application;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Starts all the clients (user interface)  as a single application.
@@ -26,11 +33,45 @@ import java.awt.*;
  * @version year-2024
  */
 
-class Main
+public class Main extends Application
 {
   public static void main (String args[])
   {
-    new Main().begin();
+    String DB_URL = "jdbc:derby:catshop.db;create=true";
+        
+    try (Connection conn = DriverManager.getConnection(DB_URL);
+         Statement stmt = conn.createStatement();
+         ResultSet rs = stmt.executeQuery("SELECT * FROM ProductTable")) {
+
+        while (rs.next()) {
+            String productNo = rs.getString("productNo");
+            String description = rs.getString("description");
+            byte[] imageData = rs.getBytes("picture");
+            float price = rs.getFloat("price");
+
+            // Process the retrieved data
+            System.out.println("Product No: " + productNo);
+            System.out.println("Description: " + description);
+            System.out.println("Image Data Length: " + imageData.length);
+            System.out.println("Price: " + price);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    launch(args);
+  }
+  @Override
+  public void start(Stage primaryStage)
+  {
+    primaryStage.setTitle("Ministore");
+
+    BorderPane root = new BorderPane();
+    Scene scene = new Scene(root, 800, 600);
+
+    primaryStage.setScene(scene);
+    primaryStage.hide();
+    begin();
   }
 
   /**
@@ -53,18 +94,16 @@ class Main
   */
   public void startCustomerGUI_MVC(MiddleFactory mlf )
   {
-    JFrame  window = new JFrame();
+    Stage window = new Stage();
     window.setTitle( "Customer Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
     
     CustomerModel model      = new CustomerModel(mlf);
-    CustomerView view        = new CustomerView( window, mlf, pos.width, pos.height );
+    CustomerView view        = new CustomerView(window, mlf);
     CustomerController cont  = new CustomerController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model, ---view is observer, model is Observable
-    window.setVisible(true);         // start Screen
+    window.show();         // start Screen
   }
 
   /**
@@ -73,18 +112,16 @@ class Main
    */
   public void startCashierGUI_MVC(MiddleFactory mlf )
   {
-    JFrame  window = new JFrame();
+    Stage  window = new Stage();
     window.setTitle( "Cashier Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
     
     CashierModel model      = new CashierModel(mlf);
-    CashierView view        = new CashierView( window, mlf, pos.width, pos.height );
+    CashierView view        = new CashierView( window, mlf);
     CashierController cont  = new CashierController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
+    window.show();         // Make window visible
     model.askForUpdate();            // Initial display
   }
 
@@ -95,19 +132,17 @@ class Main
   
   public void startPackingGUI_MVC(MiddleFactory mlf)
   {
-    JFrame  window = new JFrame();
+    Stage  window = new Stage();
 
     window.setTitle( "Packing Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
     
     PackingModel model      = new PackingModel(mlf);
-    PackingView view        = new PackingView( window, mlf, pos.width, pos.height );
+    PackingView view        = new PackingView( window, mlf);
     PackingController cont  = new PackingController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
+    window.show();         // Make window visible
   }
   
   /**
@@ -116,19 +151,19 @@ class Main
    */
   public void startBackDoorGUI_MVC(MiddleFactory mlf )
   {
-    JFrame  window = new JFrame();
+    Stage  window = new Stage();
 
     window.setTitle( "BackDoor Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
+//  window.setDefaultCloseOperation( Stage.EXIT_ON_CLOSE );
+//  Dimension pos = PosOnScrn.getPos();
     
     BackDoorModel model      = new BackDoorModel(mlf);
-    BackDoorView view        = new BackDoorView( window, mlf, pos.width, pos.height );
+    BackDoorView view        = new BackDoorView( window, mlf);
     BackDoorController cont  = new BackDoorController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
+    window.show();         // Make window visible
   }
   
 }

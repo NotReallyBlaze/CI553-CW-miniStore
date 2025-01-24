@@ -5,8 +5,16 @@ import middle.MiddleFactory;
 import middle.OrderProcessing;
 import middle.StockReadWriter;
 
-import javax.swing.*;
-import java.awt.*;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import javafx.scene.control.TextArea;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -16,21 +24,19 @@ import java.util.Observer;
  */
 public class CashierView implements Observer
 {
-  private static final int H = 300;       // Height of window pixels
-  private static final int W = 400;       // Width  of window pixels
   
   private static final String CHECK  = "Check";
   private static final String BUY    = "Buy";
   private static final String BOUGHT = "Bought/Pay";
 
-  private final JLabel      pageTitle  = new JLabel();
-  private final JLabel      theAction  = new JLabel();
-  private final JTextField  theInput   = new JTextField();
-  private final JTextArea   theOutput  = new JTextArea();
-  private final JScrollPane theSP      = new JScrollPane();
-  private final JButton     theBtCheck = new JButton( CHECK );
-  private final JButton     theBtBuy   = new JButton( BUY );
-  private final JButton     theBtBought= new JButton( BOUGHT );
+  private final Label      pageTitle  = new Label("Buy Products");
+  private final Label      theAction  = new Label(" ");
+  private final TextField  theInput   = new TextField();
+  private final TextArea   theOutput  = new TextArea();
+  private final ScrollPane theSP      = new ScrollPane(theOutput);
+  private final Button     theBtCheck = new Button( CHECK );
+  private final Button     theBtBuy   = new Button( BUY );
+  private final Button     theBtBought= new Button( BOUGHT );
 
   private StockReadWriter theStock     = null;
   private OrderProcessing theOrder     = null;
@@ -40,11 +46,9 @@ public class CashierView implements Observer
    * Construct the view
    * @param rpc   Window in which to construct
    * @param mf    Factor to deliver order and stock objects
-   * @param x     x-coordinate of position of window on screen 
-   * @param y     y-coordinate of position of window on screen  
    */
           
-  public CashierView(  RootPaneContainer rpc,  MiddleFactory mf, int x, int y  )
+  public CashierView(  Stage stage,  MiddleFactory mf)
   {
     try                                           // 
     {      
@@ -54,47 +58,38 @@ public class CashierView implements Observer
     {
       System.out.println("Exception: " + e.getMessage() );
     }
-    Container cp         = rpc.getContentPane();    // Content Pane
-    Container rootWindow = (Container) rpc;         // Root Window
-    cp.setLayout(null);                             // No layout manager
-    rootWindow.setSize( W, H );                     // Size of Window
-    rootWindow.setLocation( x, y );
 
-    Font f = new Font("Monospaced",Font.PLAIN,12);  // Font f is
+    // The layout
+    GridPane grid = new GridPane();
+    grid.setPadding(new Insets(10));
+    grid.setHgap(10);
+    grid.setVgap(10);
 
-    pageTitle.setBounds( 110, 0 , 270, 20 );       
-    pageTitle.setText( "Thank You for Shopping at MiniStrore" );                        
-    cp.add( pageTitle );  
+    grid.add(pageTitle, 0, 0, 2, 1);     // Adding layout components
+    pageTitle.setText("Thank You for Shopping at MiniStore");
+    grid.add(theInput, 0, 2, 2, 1);
+    grid.add(theBtCheck, 0, 3);
+    grid.add(theBtBuy, 0, 4);
+    grid.add(theBtBought, 0, 5);
+    grid.add(theSP, 1, 3, 2, 3);
+    grid.add(theAction, 0, 5, 2, 1);
+    Label welcomeLabel = new Label("Welcome");
+    grid.add(welcomeLabel, 0, 1, 2, 1);
+
+    // Button event handlers
+    theBtCheck.setOnAction(e -> cont.doCheck(theInput.getText()));
+    theBtBuy.setOnAction(e -> cont.doBuy());
+    theBtBought.setOnAction(e -> cont.doBought());
+    theOutput.setEditable(false); // To not be changed
+    theOutput.setFont(Font.font("Monospaced", 12)); // Sets the font
     
-    theBtCheck.setBounds( 16, 25+60*0, 80, 40 );    // Check Button
-    theBtCheck.addActionListener(                   // Call back code
-      e -> cont.doCheck( theInput.getText() ) );
-    cp.add( theBtCheck );                           //  Add to canvas
+    // Setting the scene
+    Scene scene = new Scene(grid, 400, 300);
+    stage.setScene(scene);
+    stage.setTitle("Cashier Client");
+    stage.show();
+    theAction.setVisible(false);
 
-    theBtBuy.setBounds( 16, 25+60*1, 80, 40 );      // Buy button 
-    theBtBuy.addActionListener(                     // Call back code
-      e -> cont.doBuy() );
-    cp.add( theBtBuy );                             //  Add to canvas
-
-    theBtBought.setBounds( 16, 25+60*3, 80, 40 );   // Bought Button
-    theBtBought.addActionListener(                  // Call back code
-      e -> cont.doBought() );
-    cp.add( theBtBought );                          //  Add to canvas
-
-    theAction.setBounds( 110, 25 , 270, 20 );       // Message area
-    theAction.setText( "" );                        // Blank
-    cp.add( theAction );                            //  Add to canvas
-
-    theInput.setBounds( 110, 50, 270, 40 );         // Input Area
-    theInput.setText("");                           // Blank
-    cp.add( theInput );                             //  Add to canvas
-
-    theSP.setBounds( 110, 100, 270, 160 );          // Scrolling pane
-    theOutput.setText( "" );                        //  Blank
-    theOutput.setFont( f );                         //  Uses font  
-    cp.add( theSP );                                //  Add to canvas
-    theSP.getViewport().add( theOutput );           //  In TextArea
-    rootWindow.setVisible( true );                  // Make visible
     theInput.requestFocus();                        // Focus is here
   }
 

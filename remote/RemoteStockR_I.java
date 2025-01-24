@@ -2,8 +2,7 @@ package remote;
 
 import catalogue.Product;
 import middle.StockException;
-
-import javax.swing.*;
+import javafx.scene.image.Image;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -20,7 +19,7 @@ public interface RemoteStockR_I
             throws RemoteException, StockException;
   Product   getDetails(String number)
             throws RemoteException, StockException;
-  ImageIcon getImage(String number)
+  byte[]    getImageData(String number)
             throws RemoteException, StockException;
 }
 

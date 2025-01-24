@@ -1,8 +1,10 @@
 package middle;
 
+import java.rmi.RemoteException;
+
 import catalogue.Product;
 
-import javax.swing.*;
+import javafx.scene.image.Image;;
 
 /**
   * Interface for read access to the stock list.
@@ -38,5 +40,5 @@ public interface StockReader
    * @throws StockException if issue
    */
   
-  ImageIcon getImage(String pNum) throws StockException;
+  byte[] getImageData(String pNum) throws StockException, RemoteException;
 }

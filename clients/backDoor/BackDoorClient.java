@@ -1,46 +1,58 @@
 package clients.backDoor;
 
+import javax.swing.JFrame;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import middle.MiddleFactory;
 import middle.Names;
 import middle.RemoteMiddleFactory;
-
-import javax.swing.*;
 
 /**
  * The standalone BackDoor Client
  */
 
 
-public class BackDoorClient
+public class BackDoorClient extends Application
 {
    public static void main (String args[])
    {
-     String stockURL = args.length < 1     // URL of stock RW
-                     ? Names.STOCK_RW      //  default  location
-                     : args[0];            //  supplied location
-     String orderURL = args.length < 2     // URL of order
-                     ? Names.ORDER         //  default  location
-                     : args[1];            //  supplied location
-     
-    RemoteMiddleFactory mrf = new RemoteMiddleFactory();
-    mrf.setStockRWInfo( stockURL );
-    mrf.setOrderInfo  ( orderURL );        //
-    displayGUI(mrf);                       // Create GUI
-  }
-  
-  private static void displayGUI(MiddleFactory mf)
+      launch(args);
+   }
+  @Override
+    public void start(Stage primaryStage) {
+        // Get the stock and order URLs either from arguments or default
+        String stockURL = getParameters().getRaw().size() < 1     // URL of stock RW
+                ? Names.STOCK_RW      // default location
+                : getParameters().getRaw().get(0);            // supplied location
+        String orderURL = getParameters().getRaw().size() < 2     // URL of order
+                ? Names.ORDER         // default location
+                : getParameters().getRaw().get(1);            // supplied location
+
+        // Create RemoteMiddleFactory instance
+        RemoteMiddleFactory mrf = new RemoteMiddleFactory();
+        mrf.setStockRWInfo(stockURL);
+        mrf.setOrderInfo(orderURL);
+
+        // Create and display the GUI
+        displayGUI(primaryStage, mrf);
+    }
+  private static void displayGUI(Stage window, MiddleFactory mf)
   {     
-    JFrame  window = new JFrame();
-     
+    VBox root = new VBox(10);
+    
     window.setTitle( "BackDoor Client (MVC RMI)");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     
     BackDoorModel      model = new BackDoorModel(mf);
-    BackDoorView       view  = new BackDoorView( window, mf, 0, 0 );
+    BackDoorView       view  = new BackDoorView( window, mf);
     BackDoorController cont  = new BackDoorController( model, view );
     view.setController( cont );
-
+    Scene scene = new Scene(root, 800, 600);
+    root.getChildren().add(view);
     model.addObserver( view );       // Add observer to the model - view is observer, model is Observable
-    window.setVisible(true);         // Display Screen
+    window.setScene(scene);
+    window.show();         // Display Screen
   }
 }

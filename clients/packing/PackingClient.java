@@ -1,11 +1,13 @@
 package clients.packing;
 
-
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import middle.MiddleFactory;
 import middle.Names;
 import middle.RemoteMiddleFactory;
 
-import javax.swing.*;
 
 /**
  * The standalone warehouse Packing Client. warehouse staff to pack the bought order
@@ -14,37 +16,46 @@ import javax.swing.*;
  * @author  Shine University of Brighton
  * @version year 2024
  */
-public class PackingClient 
+public class PackingClient extends Application
 {
-   public static void main (String args[])
-   {
-     String stockURL = args.length < 1     // URL of stock RW
+  public static void main (String args[])
+  {
+    launch(args);
+  }
+
+  @Override
+  public void start(Stage primaryStage)
+  {
+    String stockURL = getParameters().getRaw().size() < 1     // URL of stock RW
                      ? Names.STOCK_RW      //  default  location
-                     : args[0];            //  supplied location
-     String orderURL = args.length < 2     // URL of order
+                     : getParameters().getRaw().get(0);            //  supplied location
+     String orderURL = getParameters().getRaw().size() < 2     // URL of order
                      ? Names.ORDER         //  default  location
-                     : args[1];            //  supplied location
+                     : getParameters().getRaw().get(1);            //  supplied location
      
     RemoteMiddleFactory mrf = new RemoteMiddleFactory();
     mrf.setStockRWInfo( stockURL );
     mrf.setOrderInfo  ( orderURL );        //
-    displayGUI(mrf);                       // Create GUI
+    displayGUI(mrf, primaryStage);                       // Create GUI;
   }
-  
-  public static void displayGUI(MiddleFactory mf)
+
+  public static void displayGUI(MiddleFactory mf, Stage window)
   {     
-    JFrame  window = new JFrame();
      
-    window.setTitle( "Packing Client (RMI MVC)");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    VBox root = new VBox(10);
     
+    
+
     PackingModel      model = new PackingModel(mf);
-    PackingView       view  = new PackingView( window, mf, 0, 0 );
+    PackingView       view  = new PackingView( window, mf);
     PackingController cont  = new PackingController( model, view );
     view.setController( cont );
-
+    root.getChildren().add(view);
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Display Screen
+
+    Scene scene = new Scene(root, 800, 600);
+    window.setScene(scene);
+    window.setTitle( "Packing Client (RMI MVC)");
+    window.show();         // Display Screen
   }
 }
-
